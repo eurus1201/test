@@ -18,7 +18,8 @@ import DeleteIcon from '@material-ui/icons/DeleteRounded';
 import Button from "@material-ui/core/Button";
 import useTheme from "@material-ui/core/styles/useTheme";
 import Data from 'constants/other.constant'
-
+import CreateCategory from "pages/createPage";
+import EditCategory from "pages/createPage";
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -52,17 +53,54 @@ const useStyles = makeStyles(theme => ({
 
 export default () => {
     const classes = useStyles();
+    const [categories, setCategory] = useState([Data]);
     const [openDialog, setOpenDialog] = useState(false);
-    const [categories, setCategory] = useState([['loading...']]);
     const [state, setState] = useState({});
+    const [editing, setEditing] = useState(false);
+    const initialCategory = { id: null, text: '', children: '' };
+    const [currentCategory, setCurrentCategory] = useState(initialCategory);
 
     const theme = useTheme();
 
     const handleChange = name => value => {
         setState({ ...state, [name]: value.target.value })
     }
-    
 
+    const addCategory = category => {
+        category.id = categories.lenght + 1;
+        setCategory([...categories, category])
+    }
+
+    const deleteCategory = id => {
+        setCategory(categories.filter(category => category.id !== id));
+    }
+
+    const editCategory = (id, category) => {
+        setEditing(true);
+        setCurrentCategory(category);
+    }
+    const updateCategory = (newCategory) => {
+        setCategory(Data.map(category => (category.id === currentCategory.id ? newCategory : category)))
+        setCurrentCategory(initialCategory)
+        setEditing(false)
+    }
+    const fields = [
+        {
+            name: "id",
+            label: "id",
+            type: 'text',
+        },
+        {
+            name: "text",
+            label: "text",
+            type: 'text',
+        },
+        {
+            name: 'children',
+            label: "children",
+            type: 'text',
+        },
+    ]
     const renderItem = (item, selectedIndex) => {
         return [
             1 + selectedIndex,
@@ -71,11 +109,11 @@ export default () => {
             item.children.map(child => child.text).join(" - "),
             <>
                 <IconButton onClick={() => {
+                    setOpenDialog(true);
                     setState(prevState => ({
                         ...prevState,
                         ...item,
-                        crudMode: true,
-                        mode: 'd',
+
                         selectedIndex
                     }))
                 }}>
@@ -83,7 +121,8 @@ export default () => {
                 </IconButton>
                 <IconButton
                     onClick={() => {
-                            setState({
+                        setOpenDialog(true);
+                        setState({
                             ...state,
                             ...item,
                             crudMode: true,
@@ -97,6 +136,7 @@ export default () => {
 
                 <IconButton
                     onClick={() => {
+                        setOpenDialog(true);
                         setState({
                             ...state,
                             id: item.id,
@@ -120,33 +160,21 @@ export default () => {
         loadTable();
     }, []);
 
-    const fields = [
-        {
-            name: "id",
-            label: "id",
-            type: 'text',
-        },
-        {
-            name: "text",
-            label: "text",
-            type: 'text',
-        },
-        {
-            name: 'children',
-            label: "children",
-            type: 'text',
-        },
-    ]
+
 
     return <>
         <Table
             data={categories}
             title={<Button
                 onClick={() => {
-                    setState({ ...state, text: '', id: '', crudMode: true, mode: 'c' });
+                    setState({ ...state, text: '', id: '' });
                 }}
             >
-                <AddIcon />ADD
+                <CreateCategory
+                                addCategory={addCategory}
+                            />
+               <AddIcon />ADD
+            
             </Button>}
             columns={[
                 "number",
@@ -156,5 +184,41 @@ export default () => {
                 "actions"
             ]}
         />
+        <Dialog
+            open={openDialog}
+            classes={{ paper: classes.dialog }}
+            onClose={() => setOpenDialog(false)}
+            maxWidth="lg"
+        >
+            <DialogTitle style={{ textAlign: 'center' }}>"tittle"</DialogTitle>
+            <DialogContent >
+                {editing ? (
+                    <dive>
+                        <EditCategory
+                            currentCategory={currentCategory}
+                            setEditing={setEditing}
+                            updateCategory={updateCategory}
+                        />
+                    </dive>
+                ) : (
+                        <div>
+                            <CreateCategory
+                                addCategory={addCategory}
+                            />
+                        </div>
+                    )
+                }
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setOpenDialog(false)}>
+                    close
+                </Button>
+                {state.crudMode && <Button color="secondary"
+                //  onClick={}
+                  >
+                    save
+                </Button>}
+            </DialogActions>
+        </Dialog>
     </>
 }
