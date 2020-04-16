@@ -95,7 +95,7 @@ export default () => {
         </div>
         <div className="seven columns">
           <h2>View </h2>
-          <UserTable  categories={categories} deleteCategory={deleteCategory} editCategory={editCategory} />
+          <UserTable  categories={Data} deleteCategory={deleteCategory} editCategory={editCategory} />
         </div>
       </div>
     </div>

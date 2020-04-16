@@ -14,11 +14,11 @@ const UserTable = (props) => {
             item.children.map(permission => permission.text).join(" - "),
             <>
             
-                <IconButton  onClick={() => props.deleteCategory(props.id)}>
+                <IconButton  onClick={() => props.deleteCategory(items.id)}>
                     delete
                 </IconButton>
                 <IconButton
-                    onClick={() => props.editCategory(props.id, props.text,props.children)}
+                    onClick={() => props.editCategory(item.id, item.text, item.children)}
                 >
                     edit
                 </IconButton>
