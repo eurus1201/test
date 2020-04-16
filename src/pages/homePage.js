@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Table from 'components/table';
+import Field from 'components/field';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -51,23 +54,23 @@ export default () => {
     const classes = useStyles();
     const [openDialog, setOpenDialog] = useState(false);
     const [categories, setCategory] = useState([['loading...']]);
-    const [state, setState] =  useState({});
+    const [state, setState] = useState({});
+
     const theme = useTheme();
 
     const handleChange = name => value => {
         setState({ ...state, [name]: value.target.value })
     }
-
+    
 
     const renderItem = (item, selectedIndex) => {
         return [
             1 + selectedIndex,
             item.id,
             item.text,
-            item.children.map(permission => permission.text).join(" - "),
+            item.children.map(child => child.text).join(" - "),
             <>
                 <IconButton onClick={() => {
-                    setOpenDialog(true);
                     setState(prevState => ({
                         ...prevState,
                         ...item,
@@ -80,8 +83,7 @@ export default () => {
                 </IconButton>
                 <IconButton
                     onClick={() => {
-                        setOpenDialog(true);
-                        setState({
+                            setState({
                             ...state,
                             ...item,
                             crudMode: true,
@@ -95,7 +97,6 @@ export default () => {
 
                 <IconButton
                     onClick={() => {
-                        setOpenDialog(true);
                         setState({
                             ...state,
                             id: item.id,
@@ -110,17 +111,42 @@ export default () => {
         ]
     }
 
+    const loadTable = () => {
+        setCategory(Data.map((item, selectedIndex) => renderItem(item, selectedIndex)))
+    }
+
+
+    useEffect(() => {
+        loadTable();
+    }, []);
+
+    const fields = [
+        {
+            name: "id",
+            label: "id",
+            type: 'text',
+        },
+        {
+            name: "text",
+            label: "text",
+            type: 'text',
+        },
+        {
+            name: 'children',
+            label: "children",
+            type: 'text',
+        },
+    ]
+
     return <>
- <Table
-            data={Data}
+        <Table
+            data={categories}
             title={<Button
                 onClick={() => {
-                    setOpenDialog(true);
-                    setState({ ...state,text: '',id:'', crudMode: true,mode: 'c'});
+                    setState({ ...state, text: '', id: '', crudMode: true, mode: 'c' });
                 }}
             >
-                <AddIcon />
-               
+                <AddIcon />ADD
             </Button>}
             columns={[
                 "number",
@@ -131,5 +157,4 @@ export default () => {
             ]}
         />
     </>
-
 }
