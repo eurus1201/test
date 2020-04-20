@@ -1,0 +1,177 @@
+interface Level {
+  id: string;
+  text: string;
+  children?: Level[];
+}
+
+const levels: Level[] = [
+  {
+    id: "1",
+    text: "Category 1",
+    children: [
+      { id: "1-1", text: "Sub-Category 1-1", children: [] },
+      { id: "1-2", text: "Sub-Category 1-2", children: [] },
+      {
+        id: "1-3",
+        text: "Sub-Category 1-3",
+        children: [
+          { id: "1-3-1", text: "Sub-Category 1-3-1", children: [] },
+          {
+            id: "1-3-2",
+            text: "Sub-Category 1-3-2",
+            children: [
+              { id: "1-3-2-1", text: "Sub-Category 1-3-2-1", children: [] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "2",
+    text: "Category 2",
+    children: [
+      {
+        id: "2-1",
+        text: "Sub-Category 2-1",
+        children: [{ id: "2-1-1", text: "Sub-Category 2-1-1", children: [] }]
+      },
+      {
+        id: "2-2",
+        text: "Sub-Category 2-2",
+        children: [
+          { id: "2-2-1", text: "Sub-Category 2-2-1", children: [] },
+          { id: "2-2-2", text: "Sub-Category 2-2-2", children: [] },
+          { id: "2-2-3", text: "Sub-Category 2-2-3", children: [] },
+          {
+            id: "2-2-4",
+            text: "Sub-Category 2-2-4",
+            children: [
+              { id: "2-2-4-1", text: "Sub-Category 2-2-4-1", children: [] },
+              { id: "2-2-4-2", text: "Sub-Category 2-2-4-2", children: [] },
+              {
+                id: "2-3-4-3",
+                text: "Sub-Category 2-2-4-3",
+                children: [
+                  {
+                    id: "2-3-4-3-1",
+                    text: "Sub-Category 2-2-4-3-1",
+                    children: []
+                  }
+                ]
+              }
+            ]
+          },
+          { id: "2-2-5", text: "Sub-Category 2-2-5", children: [] },
+          { id: "2-2-6", text: "Sub-Category 2-2-6", children: [] }
+        ]
+      },
+      { id: "2-3", text: "Sub-Category 2-3", children: [] }
+    ]
+  }
+];
+
+function add(levelsArray: Level[], levelItem: Level, id: string) {
+  for (let i = 0; i < levelsArray.length; i++) {
+    const item = levelsArray[i] as Level;
+
+    if (item.id == id) {
+      item.children.push(levelItem);
+      break;
+    } else {
+      add(item.children, levelItem, id);
+    }
+  }
+
+  return levelsArray;
+}
+
+add(
+  levels,
+  { id: "2-2-4-1-1", text: "Sub-Category 2-2-4-1-1", children: [] },
+  "2-2-4-1"
+);
+
+// JSON.stringify(levels, null, 4); // ?
+
+function deleteItem(levelsArray: Level[], id: string) {
+  for (let i = 0; i < levelsArray.length; i++) {
+    const item = levelsArray[i] as Level;
+
+    if (item.id === id) {
+      levelsArray = levelsArray.filter(({ id }) => id != item.id);
+      break;
+    } else if (item.children.find(child => child.id === id)) {
+      item.children = item.children.filter(child => child.id !== id);
+      break;
+    } else {
+      deleteItem(item.children, id);
+    }
+  }
+
+  return levelsArray;
+}
+
+// deleteItem(levels, "2-2-4-2");
+// JSON.stringify(levels, null, 4); // ?
+
+// function finder(levelsArray: Level[], id: string) {
+//   var item = {} as Level;
+
+//   for (let index = 0; index < levelsArray.length; index++) {
+//     const element = levelsArray[index] as Level;
+//     if (element.id === id) {
+//       item = element;
+
+//       break;
+//     } else if (element.children.find(child => child.id === id)) {
+//       item = element.children.filter(child => child.id === id)[0];
+
+//       break;
+//     } else {
+//       finder(element.children, id);
+//     }
+//   }
+
+//   return item;
+// }
+interface IndexedLevels {
+  [id: string]: Level;
+}
+function finder(levels: IndexedLevels, id: string) {
+  return levels[id];
+}
+
+function indexing(levelsArray: Level[]) {
+  const indexed = {};
+
+  function applyIndex(secondLevelsArray: Level[]) {
+    for (let i = 0; i < secondLevelsArray.length; i++) {
+      const item = secondLevelsArray[i] as Level;
+
+      if (!indexed[item.id]) {
+        indexed[item.id] = item;
+
+        applyIndex(item.children);
+      } else {
+        break;
+      }
+    }
+  }
+
+  applyIndex(levelsArray);
+
+  return indexed;
+}
+let indexedLevels: IndexedLevels = indexing(levels);
+
+function relocate(levelsArray: Level[], parentId: string, itemId: string) {
+  const item = finder(indexedLevels, itemId);
+
+  deleteItem(levelsArray, itemId);
+
+  add(levelsArray, item, parentId);
+
+  indexedLevels = indexing(levelsArray);
+}
+// relocate(levels, "1-2", "1-3-1");
